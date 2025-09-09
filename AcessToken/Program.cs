@@ -1,5 +1,8 @@
 using AcessToken;
+using AcessToken.DbSetting;
+using AcessToken.Repository;
 using Microsoft.OpenApi.Models;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ITokenService, TokenService>();
+builder.Services.AddSingleton<IDbSettings, DbSettings>();
+builder.Services.AddSingleton<DapperDbContext>();
+builder.Services.AddScoped<IApiClientRepository, ApiClientRepository>();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379"; // 你的 Redis 連線字串
+    options.InstanceName = "TokenCache:";     // 可選，加前綴避免 key 衝突
+});
 
 // 添加 Swagger 生成器
 builder.Services.AddSwaggerGen(c =>
@@ -41,6 +53,7 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
+
 });
 
 var app = builder.Build();
